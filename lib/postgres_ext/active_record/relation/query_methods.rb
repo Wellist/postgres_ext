@@ -189,15 +189,17 @@ module ActiveRecord
       self
     end
 
-    def build_arel_with_extensions
-      arel = build_arel_without_extensions
+    module Extensions
+      def build_arel
+        arel = super
+        build_with(arel)
 
-      build_with(arel)
+        build_rank(arel, rank_value) if rank_value
 
-      build_rank(arel, rank_value) if rank_value
-
-      arel
+        arel
+      end
     end
+    prepend Extensions
 
     def build_with(arel)
       with_statements = with_values.flat_map do |with_value|
@@ -254,7 +256,5 @@ module ActiveRecord
         end
       end
     end
-
-    alias_method_chain :build_arel, :extensions
   end
 end
